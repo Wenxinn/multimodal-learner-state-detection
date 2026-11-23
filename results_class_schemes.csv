@@ -1,0 +1,13 @@
+scheme,model,accuracy,macro_F1,chance_F1,per_class,vs_baseline,vs_chance
+4 classes,Baseline (question number),0.666,0.351,0.25,"{'construction': np.float64(0.0), 'locating': np.float64(0.84), 'reasoning': np.float64(0.51), 'understanding': np.float64(0.06)}",0.0,0.101
+4 classes,Random Forest,0.583,0.344,0.25,"{'construction': np.float64(0.11), 'locating': np.float64(0.78), 'reasoning': np.float64(0.35), 'understanding': np.float64(0.14)}",-0.008,0.094
+4 classes,XGBoost,0.566,0.357,0.25,"{'construction': np.float64(0.07), 'locating': np.float64(0.75), 'reasoning': np.float64(0.37), 'understanding': np.float64(0.23)}",0.006,0.107
+4 classes,SVM (RBF),0.488,0.369,0.25,"{'construction': np.float64(0.17), 'locating': np.float64(0.67), 'reasoning': np.float64(0.39), 'understanding': np.float64(0.25)}",0.018,0.119
+3 classes A (construction -> reasoning),Baseline (question number),0.721,0.505,0.333,"{'locating': np.float64(0.84), 'reasoning': np.float64(0.68), 'understanding': np.float64(0.0)}",0.0,0.171
+3 classes A (construction -> reasoning),Random Forest,0.631,0.468,0.333,"{'locating': np.float64(0.77), 'reasoning': np.float64(0.53), 'understanding': np.float64(0.1)}",-0.037,0.135
+3 classes A (construction -> reasoning),XGBoost,0.616,0.511,0.333,"{'locating': np.float64(0.75), 'reasoning': np.float64(0.54), 'understanding': np.float64(0.24)}",0.006,0.177
+3 classes A (construction -> reasoning),SVM (RBF),0.541,0.481,0.333,"{'locating': np.float64(0.67), 'reasoning': np.float64(0.51), 'understanding': np.float64(0.26)}",-0.023,0.148
+3 classes B (understanding + reasoning),Baseline (question number),0.73,0.463,0.333,"{'construction': np.float64(0.0), 'locating': np.float64(0.84), 'understand+reason': np.float64(0.55)}",0.0,0.13
+3 classes B (understanding + reasoning),Random Forest,0.654,0.451,0.333,"{'construction': np.float64(0.07), 'locating': np.float64(0.77), 'understand+reason': np.float64(0.51)}",-0.012,0.118
+3 classes B (understanding + reasoning),XGBoost,0.62,0.434,0.333,"{'construction': np.float64(0.08), 'locating': np.float64(0.75), 'understand+reason': np.float64(0.47)}",-0.03,0.101
+3 classes B (understanding + reasoning),SVM (RBF),0.558,0.444,0.333,"{'construction': np.float64(0.18), 'locating': np.float64(0.69), 'understand+reason': np.float64(0.45)}",-0.02,0.11

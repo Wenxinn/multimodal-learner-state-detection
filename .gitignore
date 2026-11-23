@@ -1,0 +1,38 @@
+# ---- Participant data (never commit) ----
+public/userData/
+*.zip
+
+# Participant info sheets (names, emails, student IDs)
+*.pdf
+*.xlsx
+*.xls
+*participant*info*.csv
+*participants*.csv
+*consent*.*
+*roster*.*
+
+# Participant-derived data files
+dataset*.csv
+features.csv
+windows_*.csv
+gaze_data.csv
+combined_gaze_pen.csv
+sync_data.csv
+*predictions*.csv
+windows_pred_*.csv
+
+# Superseded / duplicate analysis runs
+analysis_v3/mac_check/
+analysis_v3/old_sklearn172/
+
+# Personal notes and slide decks (contain author name / internal info)
+analysis_v3/HANDOFF.md
+*.pptx
+
+# ---- System / Python ----
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/

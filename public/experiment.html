@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>English Reading Task</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      color: #111;
+    }
+
+    .wrap {
+      padding: 12px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fafafa;
+    }
+
+    .status-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: bold;
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 1fr;
+      gap: 0;
+      border: 1px solid #d0d0d0;
+      border-radius: 12px;
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .col {
+      padding: 14px;
+      border-right: 1px solid #d0d0d0;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .col:last-child {
+      border-right: 0;
+    }
+
+    h1 {
+      margin: 0 0 12px 0;
+      font-size: 28px;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0 0 12px 0;
+      line-height: 1.35;
+      font-size: 14px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .tab-btn {
+      min-width: 40px;
+      padding: 7px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f5f5f5;
+      color: #999;
+      font-weight: bold;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #000;
+      border-color: #111;
+    }
+
+    .tab-btn.done {
+      background: #ececec;
+      color: #555;
+      border-color: #c0c0c0;
+    }
+
+    .sub-q {
+      color: #b0b0b0;
+      margin-bottom: 8px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .sub-q.active {
+      color: #000;
+      font-weight: bold;
+    }
+
+    .answerHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+    }
+
+    .primary-btn {
+      background: #e2f0d9;
+    }
+
+    .primary-btn:hover {
+      background: #cfe6c0;
+    }
+
+    .danger-btn {
+      background: #fff1f0;
+      border-color: #f1b0b7;
+    }
+
+    .danger-btn:hover {
+      background: #fde2e5;
+    }
+
+    .canvasBox {
+      border: 1px solid #d0d0d0;
+      border-radius: 10px;
+      overflow: hidden;
+      height: calc(100% - 72px);
+      min-height: 260px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+      touch-action: none;
+    }
+
+    .modal-form-grid select,
+    .modal-form-grid input,
+    .modal-form-grid textarea {
+      font-family: inherit;
+      font-size: 15px;
+      padding: 10px;
+      border: 1px solid #cfcfcf;
+      border-radius: 8px;
+    }
+
+    #endScreen {
+      display: none;
+      flex: 1;
+      border: 1px solid #d0d0d0;
+      border-radius: 12px;
+      padding: 28px;
+      background: #fff;
+      text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .col {
+        border-right: 0;
+        border-bottom: 1px solid #d0d0d0;
+      }
+      .col:last-child {
+        border-bottom: 0;
+      }
+      .canvasBox {
+        height: 420px;
+      }
+      .modal-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div><strong>Participant:</strong> <span id="userDisplay"></span></div>
+      <div><strong>Main Question:</strong> <span id="mainQDisplay"></span></div>
+      <div><strong>Active Sub-question:</strong> <span id="currentQDisplay"></span></div>
+      <div class="status-pill" id="statusPill">Logging active</div>
+    </div>
+
+    <div style="background:#fff8e1; border:1px solid #f0d27a; border-radius:8px; padding:6px 14px; margin-bottom:6px; font-size:13px; color:#7a5c00; text-align:center;">
+      Sit with your back against the chair, look at the screen while writing, and try to stay in the same position as during calibration.<br>
+      背もたれに背中をつけて座り、書くときも画面を見て、キャリブレーションのときと同じ姿勢を保つようにしてください。
+    </div>
+
+    <div class="grid" id="mainGrid">
+      <div class="col">
+        <div id="passage-pane">
+          <h1 id="passageTitle"></h1>
+          <div id="passageContent"></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div id="question-pane">
+          <h2>Sub-Questions</h2>
+          <div class="tabs" id="tabContainer"></div>
+          <p class="muted">Only the current sub-question is black. Scrolling is disabled during the task. / 現在のサブ質問のみが黒色で表示されます。タスク中のスクロールはできません。</p>
+          <div id="questionList"></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div id="answer-pane">
+          <h2>Answer Area <span id="answerQLabel"></span></h2>
+          <div class="answerHeader">
+            <span class="muted">Write your answer in the box below. One sub-question at a time. / 下の解答欄に答えを書いてください。1度に1問ずつ解答します。</span>
+            <div class="button-row">
+              <button id="endBtn" class="primary-btn" type="button">Submit / 送信</button>
+              <button id="clearBtn" type="button" style="background:#fde8e8; border:1px solid #f0b0b0; color:#a33;">Clear everything / 全部消す</button>
+            </div>
+          </div>
+          <div class="canvasBox">
+            <canvas id="ans"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="endScreen">
+      <h1 id="endTitle" style="font-size: 32px; margin-bottom: 10px;">Experiment Complete</h1>
+      <h2 id="endSubtitle" style="color: #2b6cb0; margin-top: 0;">Thank you for participating! / ご参加いただきありがとうございました！</h2>
+      <p id="endMessage" style="font-size: 18px; margin-top: 20px;"></p>
+      <div class="button-row" id="continueButtons" style="justify-content: center; margin-top: 20px;"></div>
+    </div>
+  </div>
+
+  <div id="questionnaireModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+    
+    <div class="modal-content" style="background: white; max-width: 1100px; width: 95%; height: 85vh; max-height: 750px; overflow: hidden; display: flex; flex-direction: column; margin: 0 auto; padding: 25px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.3);">
+      
+      <div style="flex-shrink: 0;">
+        <h3 style="margin:0; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Questionnaire / アンケート <span id="modalQNum" style="font-size: 16px; color: #666; float: right;"></span></h3>
+        <p class="muted" id="modalPromptText" style="font-size: 15px; margin-top: 10px; margin-bottom: 15px; font-weight: bold;"></p>
+      </div>
+
+      <div style="display: flex; gap: 30px; flex: 1; min-height: 0;">
+        
+        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+          <label style="font-weight: bold; font-size: 15px; margin-bottom: 8px;">
+            Your written answer preview / あなたの解答プレビュー
+          </label>
+          <div style="flex: 1; border: 1px solid #ccc; background: #f4f6f9; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; padding: 10px;">
+              <img id="qAnswerPreview" src="" alt="Student Answer Snapshot" style="width: 100%; height: 100%; object-fit: contain; min-height: 0; max-height: none;" />
+          </div>
+        </div>
+
+        <div style="flex: 1.2; display: flex; flex-direction: column; min-height: 0;">
+          
+          <div class="modal-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1;">
+            
+            <label style="display: flex; flex-direction: column; font-weight: bold; font-size: 14px;">
+              Confidence / 自信度 (1–5) *
+              <span style="font-size: 13px; color: #d9534f; font-weight: normal; margin-top: 2px; white-space: nowrap;">1 = Lowest/最も低い, 5 = Highest/最も高い</span>
+              <input type="number" id="qConf" min="1" max="5" placeholder="1-5" style="margin-top: auto; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;" />
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: bold; font-size: 14px;">
+              Difficulty / 難易度 (1–5) *
+              <span style="font-size: 13px; color: #d9534f; font-weight: normal; margin-top: 2px; white-space: nowrap;">1 = Easiest/最も簡単, 5 = Hardest/最も難しい</span>
+              <input type="number" id="qDiff" min="1" max="5" placeholder="1-5" style="margin-top: auto; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;" />
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: bold; font-size: 14px;">
+              Main Strategy / 主な戦略 *
+              <span style="font-size: 13px; color: #666; font-weight: normal; margin-top: 2px;">How did you mainly look for the answer? / 答えを探すとき、主にどの方法を使いましたか？</span>
+              <select id="qStrat" style="margin-top: 8px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                <option value="">Select... / 選択してください</option>
+                <option value="scanning">Scanning / keyword search / (スキャニング・キーワード検索)</option>
+                <option value="rereading">Rereading (再読)</option>
+                <option value="guessing">Guessing (推測)</option>
+              </select>
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: bold; font-size: 14px;">
+              Dominant State / 最も当てはまる状態 *
+              <span style="font-size: 13px; color: #666; font-weight: normal; margin-top: 2px;">What were you mainly doing while solving this question? / この問題を解いている間、主に何をしていましたか？</span>
+              <select id="qState" style="margin-top: 8px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                <option value="">Select... / 選択してください</option>
+                <option value="understanding">Understanding (文章の理解)</option>
+                <option value="locating_information">Locating info (該当箇所の検索)</option>
+                <option value="reasoning_integrating">Reasoning/Integrating (推論・考察)</option>
+                <option value="answer_construction">Answer construction (解答作成)</option>
+              </select>
+            </label>
+
+            <label style="display: flex; flex-direction: column; font-weight: bold; font-size: 14px; grid-column: 1 / -1;">
+              Perceived Correctness / 正解している感覚 *
+              <select id="qCorrect" style="margin-top: 8px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;">
+                <option value="">Select... / 選択してください</option>
+                <option value="sure">Sure (確実に正解)</option>
+                <option value="maybe">Maybe (たぶん正解)</option>
+                <option value="guess">Guess (勘)</option>
+              </select>
+            </label>
+
+            <label style="grid-column: 1 / -1; display: flex; flex-direction: column; font-weight: bold; font-size: 14px;">
+              Optional Notes / メモ (任意)
+              <textarea id="qNotes" style="flex: 1; min-height: 80px; padding: 8px; margin-top: 8px; resize: none; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;" placeholder="Any additional thoughts? / 何か気づいたことがあれば記入してください"></textarea>
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 15px; flex-shrink: 0;">
+            <button id="submitSurveyBtn" style="padding: 12px 35px; font-size: 16px; font-weight: bold; background-color: #111; color: white; border: none; border-radius: 6px; cursor: pointer;">Submit / 送信</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const QUESTION_BANK = {
+      "0": {
+        title: "Practice / 練習",
+        isTutorial: true,
+        paragraphs: [
+          `This is a short practice round so you can get used to the pen tablet and the eye tracker. / これはペンタブレットとアイトラッカーに慣れるための短い練習です。`,
+          `Write your answer with the pen in the white box on the right ("Answer Area"). To erase and start over, press the "Clear everything" button. When you press "Submit", a short questionnaire will appear. / 右側(みぎがわ)の白(しろ)いボックス（「Answer Area」）にペンで解答(かいとう)を書(か)いてください。消(け)してやり直(なお)すには「Clear everything（全部消す）」ボタンを押(お)してください。「Submit」を押(お)すと、短(みじか)いアンケートが表示(ひょうじ)されます。`,
+          `In the questionnaire, "Main Strategy" asks HOW you looked for the answer (scanning, rereading, guessing), and "Dominant State" asks WHAT you were mainly doing (understanding, locating info, reasoning, writing the answer). Please try answering it now during practice. Your practice answers are NOT part of the experiment. / アンケートの「Main Strategy（主な戦略）」は答えをどう探したか（スキャニング・再読・推測）を、「Dominant State（最も当てはまる状態）」は主に何をしていたか（理解・検索・推論・解答作成）を尋ねます。練習で一度試してみてください。練習の解答は実験データには含まれません。`
+        ],
+        subquestions: [
+          "Practice 1: Write the word \"hello\" with the pen. / 練習1：ペンで「hello」と書いてください。",
+          "Practice 2: Write any number from 1 to 10 with the pen. / 練習2：ペンで1〜10のいずれかの数字を書いてください。"
+        ]
+      },
+      "1": {
+        title: "Japanese Walking",
+        paragraphs: [
+          `Japan is often reported as having the longest life expectancy. Japanese people live to be an average of above 84 years old. Many people say this is because of the country's healthy diet. Another reason could be how people walk. Japanese people walk a lot. This has started a new fitness trend on TikTok, called "Japanese Walking". It involves walking quickly for three minutes and then slowing down for three minutes. Walkers repeat this pattern five times. Health experts say Japanese walking is good for posture, blood circulation, lowering blood pressure, and reducing stress. It has also been linked to a lower risk of dementia. Doctors also say it can help people live longer.`,
+          `Japanese people might not know about the term "Japanese Walking". To them, it is just walking. Researchers at Shinshu University in Matsumoto, Japan came up with the name in 2007. They conducted a study on high- and low-intensity walking. The recent worldwide popularity of the walking method is due to videos made by Eugene Teo, an Australian fitness coach and social media content creator. He wanted people to follow a simple exercise routine that had an easy-to-remember name.`
+        ],
+        subquestions: [
+          "What is the average age that Japanese people live to?",
+          "How much does the article say Japanese people walk?",
+          "How many times do people walk slowly with Japanese walking?",
+          "What might Japanese walking be good at lowering?",
+          "What might “Japanese walking” lead to a lower risk of?",
+          "The walking routine became popular around the world because of one coach’s videos. Why do you think his way of sharing it worked so well?",
+          "Japanese people see this as just ordinary walking, but people in other countries saw it as something new. Why do you think the same activity felt different to each group?",
+          "In your own words, how would you briefly explain what “Japanese walking” is to someone who has never heard of it?"
+        ]
+      },
+      "2": {
+        title: "Blinking",
+        paragraphs: [
+          `Blinking is something we do automatically, without thinking. We blink 15–20 times a minute. There are several reasons why we blink. One is to stop our eyes from becoming dry. This helps our vision. Another reason is to protect our eyes from dust or sudden insect attacks. Scientists in Canada think they have found another function of blinking. The researchers are from Concordia University in Montreal. They found that we blink less when we are listening to someone speak. This happens more when there is background noise. Lead researcher Penelope Coupal said blinking less means our brain has a little more energy. This allows us to focus on what another person is saying.`,
+          `The research team conducted two experiments on 49 participants. All of the test participants listened to sentences being read aloud. In one experiment, there was no background noise. In the other test, there was background noise, which made it harder for the people to hear the sentences. The scientists said that people in the test with background noise blinked a lot less. When the background noise increased, blink rates dropped even further. Study co-author Dr Mickael Deroche said we automatically blink less "when important information is coming". Ms Coupal agreed. She said: "We don't just blink randomly. In fact, we blink systematically less when important information is presented."`
+        ],
+        subquestions: [
+          "How many times a minute do people blink?",
+          "What does blinking prevent happening to our eyes?",
+          "What might suddenly attack our eyes?",
+          "When do we blink less?",
+          "What does our brain have more of when we blink less?",
+          "The researchers used one test with background noise and one test without it. What do you think they were trying to find out by using both tests?",
+          "In the test with background noise, people blinked even less. What does this suggest about how our body reacts when something is hard to hear?",
+          "In your own words, what is the new reason for blinking that the Canadian scientists discovered?"
+        ]
+      },
+      "3": {
+        title: "Moss and Forensics",
+        paragraphs: [
+          `The police have many different ways to find criminals. The most well-known are fingerprints, CCTV, and DNA. A new study shows that moss is used to solve crimes. Moss grows everywhere. Scientists say these tiny plants can be big clues in police investigations. The scientists' research is in the latest edition of the journal Forensic Sciences Research. The scientists looked at all the cases in which moss was used to help solve crimes. Lead author Dr Matt von Konrat said: "We wanted to highlight the significance of botanical evidence because…investigators may be overlooking it." He added: "We're hoping that our study helps show how important these tiny plants can be."`,
+          `The earliest reported case of police using moss to help in an investigation was in 1929. The amount of moss on a skeleton helped police know when the person had died. In 2013, scientists analyzed tiny bits of moss on a man's shoes. This helped to find where the man's baby daughter was buried. Dr von Konrat led a team that found the girl's body. He said: "Based on the bits of moss, we knew what sort of micro-habitat we were looking for." The father was convicted of murder. Study author and forensic scientist Jenna Merkel said: "Through this paper, we aim to raise awareness of forensic botany." She wants the police to better understand how moss can help during investigations.`
+        ],
+        subquestions: [
+          "What well-known ways are there to solve crimes besides CCTV and DNA?",
+          "Where does the article say moss grows?",
+          "What is the name of the journal the research is published in?",
+          "Who is Matt von Konrat?",
+          "What did a researcher want to highlight the significance of?",
+          "In both the 1929 case and the 2013 case, moss gave the police information they could not get in other ways. What kind of clue does moss seem to give that fingerprints cannot?",
+          "The lead author said that investigators may be overlooking moss. Based on the cases in the passage, why do you think moss has been ignored for so long?",
+          "In your own words, how did the tiny bits of moss on the man’s shoes help the team find the body?"
+        ]
+      }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let userNumber = (urlParams.get("user") || urlParams.get("userNumber") || "1").trim();
+    let mainQ = (urlParams.get("q") || urlParams.get("qNumber") || "1").trim().replace(/^Q/i, "");
+
+    if (!QUESTION_BANK[mainQ]) {
+      mainQ = "1";
+    }
+
+    let currentSubQ = 1;
+    // Tutorial (mainQ "0") has 2 practice sub-questions; real sets have 5.
+    const totalSubQs = QUESTION_BANK[mainQ].subquestions.length;
+    const completedSubQs = new Set();
+    let firstStrokeDone = false;
+    let currentAnswerImagePath = null;
+    let adminPasswordCache = "";
+
+    const timing = {
+      subquestion_opened_ms: null,
+      writing_started_ms: null,
+      last_penup_ms: null,
+      answer_submitted_ms: null,
+      survey_opened_ms: null,
+      survey_submitted_ms: null
+    };
+
+    function getApiQNumber() {
+      return `${mainQ}-${currentSubQ}`;
+    }
+
+    function getCurrentPromptText() {
+      return QUESTION_BANK[mainQ].subquestions[currentSubQ - 1];
+    }
+
+    function updateHeader() {
+      document.getElementById("userDisplay").textContent = userNumber;
+      document.getElementById("mainQDisplay").textContent = `Q${mainQ}`;
+      document.getElementById("currentQDisplay").textContent = `Q${getApiQNumber()}`;
+      document.getElementById("answerQLabel").textContent = `(Q${getApiQNumber()})`;
+    }
+
+    function renderQuestionContent() {
+      const data = QUESTION_BANK[mainQ];
+      document.title = `Q${mainQ} - ${data.title}`;
+      document.getElementById("passageTitle").textContent = data.title;
+
+      const passageContent = document.getElementById("passageContent");
+      passageContent.innerHTML = "";
+      data.paragraphs.forEach(text => {
+        const p = document.createElement("p");
+        p.textContent = text;
+        passageContent.appendChild(p);
+      });
+
+      const tabContainer = document.getElementById("tabContainer");
+      tabContainer.innerHTML = "";
+      for (let i = 1; i <= totalSubQs; i++) {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn";
+        btn.id = `tab${i}`;
+        btn.type = "button";
+        btn.textContent = i;
+        btn.disabled = true;
+        tabContainer.appendChild(btn);
+      }
+
+      const questionList = document.getElementById("questionList");
+      questionList.innerHTML = "";
+      data.subquestions.forEach((qText, index) => {
+        const div = document.createElement("div");
+        div.className = "sub-q";
+        div.id = `subq${index + 1}`;
+        div.textContent = `${index + 1}. ${qText}`;
+        questionList.appendChild(div);
+      });
+
+      updateTabVisuals();
+      updateHeader();
+    }
+
+    function updateTabVisuals() {
+      for (let i = 1; i <= totalSubQs; i++) {
+        const tab = document.getElementById(`tab${i}`);
+        const q = document.getElementById(`subq${i}`);
+
+        tab.classList.remove("active", "done");
+        q.classList.remove("active");
+
+        if (completedSubQs.has(i)) {
+          tab.classList.add("done");
+        }
+
+        if (i === currentSubQ) {
+          tab.classList.add("active");
+          q.classList.add("active");
+        }
+      }
+    }
+
+    function resetTimingForNewSubQuestion() {
+      timing.subquestion_opened_ms = Date.now();
+      timing.writing_started_ms = null;
+      timing.last_penup_ms = null;
+      timing.answer_submitted_ms = null;
+      timing.survey_opened_ms = null;
+      timing.survey_submitted_ms = null;
+      currentAnswerImagePath = null;
+      firstStrokeDone = false;
+    }
+
+    function setStatus(text) {
+      document.getElementById("statusPill").textContent = text;
+    }
+
+    function clearCanvasVisual() {
+      const r = canvas.getBoundingClientRect();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, r.width, r.height);
+    }
+
+    async function logUIEvent(eventName, details = "", customTimestamp = null) {
+      const payload = {
+        userNumber: String(userNumber),
+        qNumber: getApiQNumber(),
+        event_name: eventName,
+        timestamp_ms: customTimestamp || Date.now(),
+        details: details
+      };
+
+      try {
+        await fetch("/api/event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.log("Event log failed:", e);
+      }
+    }
+
+    function collectLayoutDetails() {
+      const passRect = document.getElementById("passage-pane").getBoundingClientRect();
+      const quesRect = document.getElementById("question-pane").getBoundingClientRect();
+      const ansRect = document.getElementById("answer-pane").getBoundingClientRect();
+
+      return JSON.stringify({
+        participant_id: userNumber,
+        main_question: mainQ,
+        sub_question: currentSubQ,
+        prompt_text: getCurrentPromptText(),
+        passage_pane: {
+          left: passRect.left, top: passRect.top, right: passRect.right, bottom: passRect.bottom
+        },
+        question_pane: {
+          left: quesRect.left, top: quesRect.top, right: quesRect.right, bottom: quesRect.bottom
+        },
+        answer_pane: {
+          left: ansRect.left, top: ansRect.top, right: ansRect.right, bottom: ansRect.bottom
+        }
+      });
+    }
+
+    async function startSubQuestion() {
+      resetTimingForNewSubQuestion();
+      updateHeader();
+      updateTabVisuals();
+      clearCanvasVisual();
+      setStatus(`Logging active: Q${getApiQNumber()}`);
+
+      try {
+        await fetch("/api/init", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userNumber: String(userNumber),
+            qNumber: getApiQNumber(),
+            // Send participant pre-task info to backend securely
+            englishUsage: urlParams.get("usage") || "unknown",
+            englishTest: urlParams.get("test") || "unknown",
+            wearingGlasses: urlParams.get("glasses") || "unknown"
+          })
+        });
+
+        await logUIEvent("question_shown", collectLayoutDetails(), timing.subquestion_opened_ms);
+      } catch (e) {
+        console.log("API init failed:", e);
+      }
+    }
+
+    async function endSubQuestion() {
+      timing.answer_submitted_ms = Date.now();
+
+      await flush();
+
+      if (firstStrokeDone && timing.last_penup_ms) {
+        await logUIEvent("writing_stopped", "Last pen-up before submit", timing.last_penup_ms);
+      }
+
+      await logUIEvent("submit_pressed", getCurrentPromptText(), timing.answer_submitted_ms);
+
+      const snapshot = window.getAnswerPNG();
+
+      try {
+        const imgResp = await fetch("/api/canvasimg", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userNumber: String(userNumber),
+            qNumber: getApiQNumber(),
+            data: [snapshot]
+          })
+        });
+
+        if (imgResp.ok) {
+          const imgJson = await imgResp.json();
+          currentAnswerImagePath = imgJson.path || null;
+        }
+      } catch (e) {
+        console.log("Failed to save image:", e);
+      }
+
+      try {
+        await fetch("/api/end", { method: "POST" });
+      } catch (e) {
+        console.log("Failed to end logging:", e);
+      }
+
+      document.getElementById("qAnswerPreview").src = snapshot;
+      document.getElementById("modalQNum").textContent = `Q${getApiQNumber()}`;
+      document.getElementById("modalPromptText").textContent = getCurrentPromptText();
+      document.getElementById("questionnaireModal").style.display = "flex";
+
+      timing.survey_opened_ms = Date.now();
+      await logUIEvent("survey_opened", getCurrentPromptText(), timing.survey_opened_ms);
+
+      setStatus(`Waiting for questionnaire: Q${getApiQNumber()}`);
+    }
+
+    function clearSurveyForm() {
+      document.getElementById("qConf").value = "";
+      document.getElementById("qDiff").value = "";
+      document.getElementById("qStrat").value = "";
+      document.getElementById("qState").value = "";
+      document.getElementById("qCorrect").value = "";
+      document.getElementById("qNotes").value = "";
+    }
+
+    async function submitQuestionnaire() {
+      const confidence = parseInt(document.getElementById("qConf").value, 10);
+      const difficulty = parseInt(document.getElementById("qDiff").value, 10);
+      const mainStrategy = document.getElementById("qStrat").value;
+      const dominantState = document.getElementById("qState").value;
+      const perceivedCorrectness = document.getElementById("qCorrect").value;
+
+      if (!confidence || confidence < 1 || confidence > 5) {
+        alert("Please enter confidence from 1 to 5.");
+        return;
+      }
+
+      if (!difficulty || difficulty < 1 || difficulty > 5) {
+        alert("Please enter difficulty from 1 to 5.");
+        return;
+      }
+
+      if (!mainStrategy) {
+        alert("Please select your Main Strategy.");
+        return;
+      }
+
+      if (!dominantState) {
+        alert("Please select your Dominant State.");
+        return;
+      }
+
+      if (!perceivedCorrectness) {
+        alert("Please select your Perceived Correctness.");
+        return;
+      }
+
+      timing.survey_submitted_ms = Date.now();
+
+      const payload = {
+        participant_id: String(userNumber),
+        question_id: getApiQNumber(),
+        submitted_at: new Date().toISOString(),
+        prompt_text: getCurrentPromptText(),
+        answer_image_path: currentAnswerImagePath,
+        subquestion_opened_ms: timing.subquestion_opened_ms,
+        writing_started_ms: timing.writing_started_ms,
+        last_penup_ms: timing.last_penup_ms,
+        answer_submitted_ms: timing.answer_submitted_ms,
+        survey_opened_ms: timing.survey_opened_ms,
+        survey_submitted_ms: timing.survey_submitted_ms,
+        confidence_1to5: confidence,
+        difficulty_1to5: difficulty,
+        main_strategy: mainStrategy,
+        dominant_state: dominantState,
+        perceived_correctness: perceivedCorrectness,
+        notes: document.getElementById("qNotes").value || null
+      };
+
+      try {
+        const resp = await fetch("/api/questionnaire", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const err = await resp.text();
+          alert("Questionnaire save failed.\n" + err);
+          return;
+        }
+
+        await logUIEvent("survey_submitted", JSON.stringify({
+          confidence_1to5: payload.confidence_1to5,
+          difficulty_1to5: payload.difficulty_1to5,
+          main_strategy: payload.main_strategy,
+          dominant_state: payload.dominant_state
+        }), timing.survey_submitted_ms);
+
+      } catch (e) {
+        console.log("Questionnaire save failed:", e);
+        alert("Failed to save questionnaire. Please check the terminal.");
+        return;
+      }
+
+      document.getElementById("questionnaireModal").style.display = "none";
+      clearSurveyForm();
+
+      completedSubQs.add(currentSubQ);
+      updateTabVisuals();
+
+      if (currentSubQ < totalSubQs) {
+        currentSubQ += 1;
+        await startSubQuestion();
+      } else {
+        await showEndScreen();
+      }
+    }
+
+    async function showEndScreen() {
+      // If this was the tutorial (mainQ "0"), check the practice data first.
+      if (Number(mainQ) === 0) {
+        // Ask the server whether the practice data has a clear problem.
+        let result = { ok: true, problems: [] };
+        try {
+          const resp = await fetch("/api/check_practice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userNumber: userNumber })
+          });
+          result = await resp.json();
+        } catch (e) {
+          // If the check itself fails, do not block the session - just continue.
+          result = { ok: true, problems: [] };
+        }
+
+        if (!result.ok) {
+          // PROBLEM found -> pause the experiment and ask for the researcher.
+          // This is NOT the end of the experiment, so override the end-screen
+          // title/subtitle and show it as a light-red warning.
+          document.getElementById("mainGrid").style.display = "none";
+          const endScreen = document.getElementById("endScreen");
+          endScreen.style.display = "block";
+
+          const titleEl = document.getElementById("endTitle");
+          titleEl.textContent = "Please Wait / お待ちください";
+          titleEl.style.color = "#c0392b";
+
+          const subEl = document.getElementById("endSubtitle");
+          subEl.textContent = "The experiment is not finished. Please call the researcher. / 実験はまだ終わっていません。実験担当者をお呼びください。";
+          subEl.style.color = "#c0392b";
+
+          const msg = result.problems.join("\n");
+          const msgEl = document.getElementById("endMessage");
+          msgEl.style.whiteSpace = "pre-line";
+          msgEl.style.background = "#fdecea";
+          msgEl.style.border = "1px solid #f5b6b6";
+          msgEl.style.borderRadius = "8px";
+          msgEl.style.padding = "14px";
+          msgEl.style.color = "#c0392b";
+          msgEl.textContent = msg;
+          setStatus("Paused - please call the researcher");
+          return;
+        }
+
+        // OK -> move on to the real experiment (Q1).
+        alert("Practice finished! The real experiment will now begin.\n練習終了です。これから本番の実験を開始します。");
+        const nextUrl = `/experiment.html?user=${encodeURIComponent(userNumber)}&q=1&usage=${encodeURIComponent(urlParams.get("usage") || "")}&test=${encodeURIComponent(urlParams.get("test") || "")}&glasses=${encodeURIComponent(urlParams.get("glasses") || "")}`;
+        window.location.href = nextUrl;
+        return;
+      }
+
+      const isFinalQuestion = Number(mainQ) === 3;
+
+      if (isFinalQuestion) {
+        // Show the clean end screen ONLY when the entire experiment is done
+        document.getElementById("mainGrid").style.display = "none";
+        const endScreen = document.getElementById("endScreen");
+        endScreen.style.display = "block";
+        document.getElementById("endMessage").textContent = "Please reach out to the researcher to conclude the session. / 実験終了です。実験担当者にお声がけください。";
+        setStatus("Experiment complete");
+      } else {
+        // Bypass the interstitial screen and go instantly to the next question
+        const nextQ = Number(mainQ) + 1;
+        const nextUrl = `/experiment.html?user=${encodeURIComponent(userNumber)}&q=${nextQ}&usage=${encodeURIComponent(urlParams.get("usage") || "")}&test=${encodeURIComponent(urlParams.get("test") || "")}&glasses=${encodeURIComponent(urlParams.get("glasses") || "")}`;
+        window.location.href = nextUrl;
+      }
+    }
+
+    function preventScroll(e) {
+      e.preventDefault();
+    }
+
+    function preventKeyScroll(e) {
+      // Allow normal typing (incl. spacebar) inside text fields like the notes box
+      const t = e.target;
+      if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) {
+        return;
+      }
+      const blockKeys = ["Space", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "Home", "End"];
+      if (blockKeys.includes(e.code)) {
+        e.preventDefault();
+      }
+    }
+
+    document.addEventListener("wheel", preventScroll, { passive: false });
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+    document.addEventListener("keydown", preventKeyScroll, { passive: false });
+
+    const canvas = document.getElementById("ans");
+    const ctx = canvas.getContext("2d", { alpha: false });
+
+    canvas.style.touchAction = "none";
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+
+    // One-time guard: warn the researcher if the tablet is NOT in Pen Mode.
+    // A Wacom in "Mouse Mode" reports pointerType "mouse" with pressure 0,
+    // which makes all pen-pressure features unusable. Catch it on the spot.
+    let penModeWarningShown = false;
+
+    let dpr = window.devicePixelRatio || 1;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+
+      const snapshot = document.createElement("canvas");
+      snapshot.width = canvas.width;
+      snapshot.height = canvas.height;
+      snapshot.getContext("2d").drawImage(canvas, 0, 0);
+
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+
+      try {
+        ctx.drawImage(snapshot, 0, 0, rect.width, rect.height);
+      } catch {}
+    }
+
+    function pos(e) {
+      const r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    let penBuf = [];
+    let flushTimer = null;
+
+    function pushPen(e, type) {
+      const pType = e.pointerType || "pen";
+      if (pType === "touch") return;
+
+      // Warn ONCE if the input is coming through as a mouse (tablet not in Pen Mode,
+      // or drawing with the actual mouse). Pressure features depend on real stylus data.
+      if (pType !== "pen" && !penModeWarningShown) {
+        penModeWarningShown = true;
+        alert(
+          "⚠️ Input is being read as '" + pType + "', not 'pen'.\n" +
+          "Pen pressure will NOT be recorded.\n\n" +
+          "Set the Wacom to PEN MODE in Wacom Tablet Properties and make sure " +
+          "the participant is writing with the stylus, then redo this question.\n\n" +
+          "Wacomがペンモードになっているか確認し、スタイラスペンで書いてください。"
+        );
+      }
+
+      const p = pos(e);
+      // Log the RAW pressure from the device. Do NOT coerce 0 -> 0.5:
+      // a real stylus reports 0..1; a mouse/mouse-mode tablet reports 0.
+      // Faking 0.5 here is what silently destroyed the pressure features.
+      const pressure = (typeof e.pressure === "number") ? e.pressure : 0;
+
+      penBuf.push({
+        timestamp_ms: Date.now(),
+        x: p.x,
+        y: p.y,
+        pressure,
+        event: type,
+        pointerType: pType
+      });
+
+      if (!flushTimer) flushTimer = setTimeout(flush, 200);
+      if (penBuf.length >= 60) flush();
+    }
+
+    async function flush() {
+      if (flushTimer) {
+        clearTimeout(flushTimer);
+        flushTimer = null;
+      }
+
+      if (penBuf.length === 0) {
+        return;
+      }
+
+      const batch = penBuf;
+      penBuf = [];
+
+      try {
+        await fetch("/api/pen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userNumber: String(userNumber),
+            qNumber: getApiQNumber(),
+            events: batch
+          })
+        });
+      } catch (e) {
+        console.log("Pen flush failed:", e);
+      }
+    }
+
+    let drawing = false;
+    let last = null;
+
+    canvas.addEventListener("pointerdown", async (e) => {
+      e.preventDefault();
+      drawing = true;
+      canvas.setPointerCapture(e.pointerId);
+      last = pos(e);
+
+      const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+      ctx.lineWidth = 1 + pressure * 4;
+
+      if (!firstStrokeDone) {
+        firstStrokeDone = true;
+        timing.writing_started_ms = Date.now();
+        await logUIEvent("writing_started", getCurrentPromptText(), timing.writing_started_ms);
+      }
+
+      pushPen(e, "pointerdown");
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+
+      const p2 = pos(e);
+      const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+      ctx.lineWidth = 1 + pressure * 4;
+
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      last = p2;
+      pushPen(e, "pointermove");
+    });
+
+    canvas.addEventListener("pointerup", (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+      drawing = false;
+
+      timing.last_penup_ms = Date.now();
+      pushPen(e, "pointerup");
+      flush();
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      drawing = false;
+      flush();
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", async () => {
+      clearCanvasVisual();
+      await logUIEvent("canvas_cleared", getCurrentPromptText());
+    });
+
+    document.getElementById("endBtn").addEventListener("click", endSubQuestion);
+    document.getElementById("submitSurveyBtn").addEventListener("click", submitQuestionnaire);
+
+    window.getAnswerPNG = () => {
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const ex = exportCanvas.getContext("2d");
+      ex.fillStyle = "#fff";
+      ex.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ex.drawImage(canvas, 0, 0);
+      return exportCanvas.toDataURL("image/png");
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+
+    window.onload = async () => {
+      renderQuestionContent();
+      resizeCanvas();
+      await startSubQuestion();
+    };
+  </script>
+</body>
+</html>

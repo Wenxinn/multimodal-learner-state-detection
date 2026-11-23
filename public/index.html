@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment Task Runner</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 26px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        p {
+            line-height: 1.5;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 20px 0;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .input-group label {
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .input-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            width: 180px;
+        }
+
+        .start-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 30px;
+        }
+
+        .start-btn {
+            padding: 15px 30px;
+            background-color: #111;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .start-btn:hover {
+            background-color: #333;
+        }
+
+        .checklist {
+            background-color: #f8f9fb;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+        .checklist h3 {
+            margin-top: 0;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .check-item:last-child {
+            margin-bottom: 0;
+        }
+        .check-item input[type="checkbox"] {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .check-item label {
+            line-height: 1.5;
+            font-size: 14px;
+            color: #444;
+            cursor: pointer;
+            width: 100%;
+        }
+        .check-item label span {
+            display: block;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .survey-box {
+            background: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .survey-box h3 {
+            margin-top: 0;
+            font-size: 16px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #dcdcdc;
+            padding-bottom: 10px;
+        }
+        .survey-box label {
+            font-weight: bold;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .survey-box select {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>English Reading Task / 英語読解タスク</h1>
+
+    <p><strong>Welcome to my experiment! / 実験へようこそ!</strong></p>
+    <p>This website runs the full sequence automatically: <strong>Q1 → Q2 → Q3</strong>. <strong style="color: #d9534f;">There will be 40 minutes given to complete the 3 comprehension questions.</strong></p>
+
+    <p>このウェブサイトは自動的に <strong>Q1 → Q2 → Q3</strong> の順で進行します。<strong style="color: #d9534f;">3つの読解問題に解答する制限時間は全体で40分です。</strong></p>
+
+    <!-- Researcher checklist -->
+    <div class="checklist">
+        <h3>
+            Checklist for Researcher / 実験担当者用チェックリスト <br>
+            <span style="font-size: 14px; color: #666; font-weight: normal;">Please complete all checks before the participant starts / 参加者が開始する前にすべて確認してください</span>
+        </h3>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk1" class="pre-start-chk">
+            <label for="chk1">
+                Open Tobii Pro Eye Tracker Manager and check that the eye tracker is connected, and calibration is done.
+                <span>Tobii Pro Eye Tracker Managerを開き、アイトラッカーが接続されていること、およびキャリブレーションが完了していることを確認してください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk2" class="pre-start-chk">
+            <label for="chk2">
+                Connect the Wacom tablet with Window Ink!
+                <span>Wacomタブレットを接続してください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk3" class="pre-start-chk">
+            <label for="chk3">
+                Run the FastAPI server in the VS Code terminal.
+                <span>VS CodeのターミナルでFastAPIサーバーを起動してください。</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Participant checklist -->
+    <div class="checklist">
+        <h3>
+            Checklist for Participant / 参加者用チェックリスト <br>
+            <span style="font-size: 14px; color: #666; font-weight: normal;">Please read and check all boxes / 全て読んでチェックしてください</span>
+        </h3>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk4" class="pre-start-chk">
+            <label for="chk4">
+                Make sure to use full screen throughout the experiment.
+                <span>フルスクリーンにしてください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk5" class="pre-start-chk">
+            <label for="chk5">
+                Please answer all of the questionnaire honestly.
+                <span>すべてのアンケートに正直に回答してください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk6" class="pre-start-chk">
+            <label for="chk6">
+                You cannot pause in the middle of the experiment.
+                <span>実験の途中で一時停止することはできません。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk7" class="pre-start-chk">
+            <label for="chk7">
+                You cannot change your answers after clicking the submit button.
+                <span>送信ボタンをクリックした後は、解答を変更できません。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk8" class="pre-start-chk">
+            <label for="chk8">
+                Please do not use a dictionary, translation tool, or smartphone during the task.
+                <span>タスク中は、辞書、翻訳ツール、スマートフォンを使わないでください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk9" class="pre-start-chk">
+            <label for="chk9">
+                You do not need to write perfect English. Please write what you understand.
+                <span>完璧な英語でなくても大丈夫です。理解したことを書いてください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk10" class="pre-start-chk">
+            <label for="chk10">
+                If you are not sure, please write your best answer.
+                <span>自信がない場合でも、できるだけ自分なりの答えを書いてください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk11" class="pre-start-chk">
+            <label for="chk11">
+                Please work at your own pace, but keep the overall time limit in mind. There are 3 sets of questions, with 5 sub-questions in each set. In total, you need to answer 15 sub-questions within 40 minutes.
+                <span>自分のペースで進めてください。ただし、全体の制限時間に注意してください。問題は3セットあり、各セットには5つの小問があります。合計15問を40分以内に解答してください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk12" class="pre-start-chk">
+            <label for="chk12">
+                Please use the touchpad or mouse to navigate the website and answer the questionnaires. However, you must use the pen to write your answers.
+                <span>ウェブサイトの操作やアンケートへの回答には、タッチパッドまたはマウスを使用してください。ただし、解答を記入するときは、必ずペンを使用してください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk13" class="pre-start-chk">
+            <label for="chk13">
+                Please answer each sub-question separately. A questionnaire will appear after each sub-question.
+                <span>各小問には、1つずつ個別に解答してください。各小問の解答後に、アンケートが表示されます。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk14" class="pre-start-chk">
+            <label for="chk14">
+                Sit with your back against the chair, look at the screen while writing, and try to stay in the same position as during calibration.
+                <span>背もたれに背中をつけて座り、書くときも画面を見て、キャリブレーションのときと同じ姿勢を保つようにしてください。</span>
+            </label>
+        </div>
+
+        <div class="check-item">
+            <input type="checkbox" id="chk15" class="pre-start-chk">
+            <label for="chk15">
+                Please do not press the button on the pen.
+                <span>ペンのボタンは押さないでください。</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="survey-box">
+        <h3>Participant Questionnaire / 参加者アンケート</h3>
+
+        <div>
+            <label>How often do you read or use English in your daily life? / 日常生活で英語を読んだり使用したりする頻度はどのくらいですか？ *</label>
+            <select id="engUsage">
+                <option value="">Select... / 選択してください</option>
+                <option value="every_day">Every day / 毎日</option>
+                <option value="few_times_week">A few times a week / 週に数回</option>
+                <option value="rarely">Rarely / ほとんどない</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Have you taken any standardized English tests? / 英語の資格試験を受験したことがありますか？ *</label>
+            <select id="engTest">
+                <option value="">Select your level... / レベルを選択してください</option>
+                <option value="beginner">Beginner / 初級 [e.g., Eiken Pre-2, TOEIC &lt; 500, TOEFL &lt; 42, IELTS &lt; 4.0]</option>
+                <option value="intermediate">Intermediate / 中級 [e.g., Eiken 2, TOEIC 500-700, TOEFL 42-71, IELTS 4.0-5.5]</option>
+                <option value="advanced">Advanced / 上級 [e.g., Eiken Pre-1 or 1, TOEIC 700+, TOEFL 72+, IELTS 6.0+]</option>
+            </select>
+        </div>
+
+        <div>
+            <label>What are you using for vision correction during this experiment? / この実験中、視力補正として何を使用していますか？ *</label>
+            <select id="wearGlasses">
+                <option value="">Select... / 選択してください</option>
+                <option value="none">None / なし</option>
+                <option value="glasses">Glasses / 眼鏡</option>
+                <option value="contacts">Contact lenses / コンタクトレンズ</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <span style="color: #d9534f; font-weight: bold; font-size: 15px; margin-bottom: 5px; display: block;">
+            ⚠️ Ask the researcher for your ID / 実験担当者にIDを聞いてください
+        </span>
+        <div class="input-row">
+            <label for="participantId">Participant ID / 参加者ID :</label>
+            <input type="text" id="participantId" placeholder="Enter ID / IDを入力">
+        </div>
+    </div>
+
+    <div class="start-container">
+        <button class="start-btn" onclick="startExperiment()">Start experiment / 実験を開始する</button>
+    </div>
+</div>
+
+<script>
+    function startExperiment() {
+        const pId = document.getElementById('participantId').value.trim();
+        const usage = document.getElementById('engUsage').value;
+        const test = document.getElementById('engTest').value;
+        const glasses = document.getElementById('wearGlasses').value;
+
+        // Check whether all checklist boxes are checked
+        const checkboxes = document.querySelectorAll('.pre-start-chk');
+        let allChecked = true;
+        checkboxes.forEach(chk => {
+            if (!chk.checked) allChecked = false;
+        });
+
+        if (!allChecked) {
+            alert("Please read and check all boxes before starting.\n始める前にすべてのチェックボックスを確認してチェックを入れてください。");
+            return;
+        }
+
+        // Check participant information
+        if (!usage || !test || !glasses) {
+            alert("Please complete the Participant Information questions before starting.\n開始する前に参加者情報アンケートに回答してください。");
+            return;
+        }
+
+        // Check participant ID
+        if (!pId) {
+            alert("Please enter a Participant ID!\n参加者IDを入力してください！");
+            return;
+        }
+
+        // Move to experiment page — start with the tutorial (q=0), which
+        // hands off to the real experiment (q=1) automatically when done.
+        window.location.href = `experiment.html?user=${encodeURIComponent(pId)}&q=0&usage=${encodeURIComponent(usage)}&test=${encodeURIComponent(test)}&glasses=${encodeURIComponent(glasses)}`;
+    }
+</script>
+
+</body>
+</html>
