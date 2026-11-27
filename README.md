@@ -2,6 +2,8 @@
 
 This is the code for my graduate research project. I wanted to find out whether you can tell what a student is doing mentally while answering a reading-comprehension question just from where they look and how they write.
 
+**Live demo: [main.d2hz3iy049a24x.amplifyapp.com](https://main.d2hz3iy049a24x.amplifyapp.com)**. Try the reading task from the study in your browser and see the results. It runs entirely client-side: nothing is saved, and no eye tracker is needed (you can write with a mouse or trackpad).
+
 I split the task into three states:
 
 | State | What the student is doing |
@@ -100,6 +102,7 @@ analysis_v3/              Final analysis
   evaluate_v3.py            RF / XGBoost / LightGBM, flat vs. two-stage
   windows_v3.py             30-second window experiment
   results_*.csv             Aggregate results
+demo/                     Static public demo (sample passage, no backend), hosted on AWS Amplify
 scripts/make_readme_figures.py   Regenerates the charts in this README
 sync_demo.py, test_tobii_stream.py, pen_*.py   Early hardware tests
 ```

@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Demo mode: the browser itself blocks every network request (connect-src 'none'), so nothing can be sent anywhere. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none'">
+  <title>Reading Task Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      color: #111;
+    }
+
+    .wrap {
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fafafa;
+    }
+
+    .topbar a { color: #333; }
+    .topbar .spacer { flex: 1; }
+
+    .status-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: bold;
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+    }
+
+    .demo-banner {
+      background: #fff8e1;
+      border: 1px solid #f0d27a;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #6b5100;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 1fr;
+      gap: 0;
+      border: 1px solid #d0d0d0;
+      border-radius: 12px;
+      overflow: hidden;
+      flex: 1;
+      min-height: 520px;
+    }
+
+    .col {
+      padding: 14px;
+      border-right: 1px solid #d0d0d0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col:last-child { border-right: 0; }
+
+    h1 { margin: 0 0 4px 0; font-size: 26px; }
+    h2 { margin: 0 0 10px 0; font-size: 20px; }
+
+    p {
+      margin: 0 0 12px 0;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+
+    .muted { color: #666; font-size: 13px; }
+    .source { color: #888; font-size: 12px; margin-bottom: 14px; }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+
+    .tab-btn {
+      min-width: 40px;
+      padding: 7px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f5f5f5;
+      color: #999;
+      font-weight: bold;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .tab-btn.active { background: #fff; color: #000; border-color: #111; }
+    .tab-btn.done { background: #ececec; color: #555; border-color: #c0c0c0; }
+
+    .sub-q {
+      color: #b0b0b0;
+      margin-bottom: 10px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .sub-q.active { color: #000; font-weight: bold; }
+
+    .sub-q .target {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      padding: 1px 7px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      margin-left: 4px;
+      vertical-align: 1px;
+    }
+
+    .answerHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    button {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: inherit;
+      color: #111;
+    }
+
+    button:hover { background: #f5f5f5; }
+
+    .primary-btn { background: #e2f0d9; }
+    .primary-btn:hover { background: #cfe6c0; }
+
+    .clear-btn { background: #fde8e8; border-color: #f0b0b0; color: #a33; }
+    .clear-btn:hover { background: #fbd5d5; }
+
+    .canvasBox {
+      border: 1px solid #d0d0d0;
+      border-radius: 10px;
+      overflow: hidden;
+      flex: 1;
+      min-height: 300px;
+      position: relative;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .live {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .live div {
+      background: #f8f9fb;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .live strong { display: block; font-size: 16px; color: #111; }
+
+    .modal-form-grid select,
+    .modal-form-grid input,
+    .modal-form-grid textarea {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px;
+      border: 1px solid #cfcfcf;
+      border-radius: 6px;
+      margin-top: 8px;
+      color: #111;
+      background: #fff;
+    }
+
+    .modal-form-grid label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .modal-form-grid label .hint {
+      font-size: 13px;
+      color: #666;
+      font-weight: normal;
+      margin-top: 2px;
+    }
+
+    #questionnaireModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: #fff;
+      max-width: 1000px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    }
+
+    .modal-body { display: flex; gap: 28px; }
+    .modal-body > div { flex: 1; min-width: 0; }
+
+    .preview-box {
+      border: 1px solid #ccc;
+      background: #f4f6f9;
+      border-radius: 8px;
+      padding: 10px;
+      height: 260px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .preview-box img { width: 100%; height: 100%; object-fit: contain; }
+
+    .recorded {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #555;
+      background: #f8f9fb;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      line-height: 1.5;
+    }
+
+    .modal-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    #endScreen {
+      display: none;
+      flex: 1;
+      border: 1px solid #d0d0d0;
+      border-radius: 12px;
+      padding: 40px 24px;
+      background: #fff;
+      text-align: center;
+    }
+
+    #endScreen p { max-width: 620px; margin: 12px auto; color: #444; }
+
+    .link-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+      margin: 6px;
+    }
+
+    .link-btn.dark { background: #111; color: #fff; }
+    .link-btn.light { border: 1px solid #ccc; color: #111; }
+
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: 1fr; }
+      .col { border-right: 0; border-bottom: 1px solid #d0d0d0; }
+      .col:last-child { border-bottom: 0; }
+      .canvasBox { flex: none; height: 360px; }
+    }
+
+    @media (max-width: 720px) {
+      .modal-body { flex-direction: column; gap: 16px; }
+      .modal-form-grid { grid-template-columns: 1fr; }
+      .preview-box { height: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div><strong>Participant:</strong> demo</div>
+      <div><strong>Passage:</strong> sample</div>
+      <div><strong>Active Sub-question:</strong> <span id="currentQDisplay"></span></div>
+      <div class="status-pill" id="statusPill">Demo mode</div>
+      <div class="spacer"></div>
+      <a href="index.html">About</a>
+      <a href="results.html">Results</a>
+    </div>
+
+    <div class="demo-banner">
+      <strong>Demo mode:</strong> nothing is saved or sent, and no eye tracker is needed. Write with a mouse, trackpad, touchscreen or stylus.
+      In the real study, a Tobii eye tracker and a Wacom pen recorded every movement during this task.
+    </div>
+
+    <div class="grid" id="mainGrid">
+      <div class="col">
+        <div id="passage-pane">
+          <h1 id="passageTitle"></h1>
+          <div class="source">Sample passage written for this demo (not one of the study passages).</div>
+          <div id="passageContent"></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div id="question-pane">
+          <h2>Sub-Questions</h2>
+          <div class="tabs" id="tabContainer"></div>
+          <p class="muted">Only the current sub-question is shown in black. The label next to each question shows which state it was designed to bring out.</p>
+          <div id="questionList"></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div id="answer-pane" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+          <h2>Answer Area <span id="answerQLabel"></span></h2>
+          <div class="answerHeader">
+            <span class="muted">Write your answer in the box below.</span>
+            <div class="button-row">
+              <button id="endBtn" class="primary-btn" type="button">Submit</button>
+              <button id="clearBtn" class="clear-btn" type="button">Clear everything</button>
+            </div>
+          </div>
+          <div class="canvasBox">
+            <canvas id="ans" aria-label="Answer drawing area"></canvas>
+          </div>
+          <div class="live" aria-live="polite">
+            <div><strong id="liveStrokes">0</strong>strokes</div>
+            <div><strong id="liveSamples">0</strong>pen samples</div>
+            <div><strong id="liveInput">–</strong>input type</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="endScreen">
+      <h1 style="font-size: 30px; margin-bottom: 10px;">Demo complete</h1>
+      <h2 style="color: #2b6cb0; margin-top: 0;">Thanks for trying the task!</h2>
+      <p>In the real study, 47 participants completed three passages like this one, answering 894 sub-questions in total. Their gaze and pen data were turned into 94 features per sub-question, and the questionnaire answers became the labels for training the models.</p>
+      <p>Nothing you wrote here was saved.</p>
+      <div style="margin-top: 20px;">
+        <a class="link-btn dark" href="results.html">See the results</a>
+        <a class="link-btn light" href="experiment.html">Try again</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="questionnaireModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <h3 id="modalTitle" style="margin:0; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Questionnaire <span id="modalQNum" style="font-size: 16px; color: #666; float: right;"></span></h3>
+      <p class="muted" id="modalPromptText" style="font-size: 15px; margin-top: 10px; margin-bottom: 15px; font-weight: bold;"></p>
+
+      <div class="modal-body">
+        <div>
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">Your written answer</div>
+          <div class="preview-box">
+            <img id="qAnswerPreview" src="" alt="Snapshot of your written answer" />
+          </div>
+          <div class="recorded" id="recordedSummary"></div>
+        </div>
+
+        <div>
+          <div class="modal-form-grid">
+            <label>
+              Confidence (1–5)
+              <span class="hint">1 = lowest, 5 = highest</span>
+              <input type="number" id="qConf" min="1" max="5" placeholder="1-5" />
+            </label>
+
+            <label>
+              Difficulty (1–5)
+              <span class="hint">1 = easiest, 5 = hardest</span>
+              <input type="number" id="qDiff" min="1" max="5" placeholder="1-5" />
+            </label>
+
+            <label>
+              Main Strategy
+              <span class="hint">How did you mainly look for the answer?</span>
+              <select id="qStrat">
+                <option value="">Select...</option>
+                <option value="scanning">Scanning / keyword search</option>
+                <option value="rereading">Rereading</option>
+                <option value="guessing">Guessing</option>
+              </select>
+            </label>
+
+            <label>
+              Dominant State
+              <span class="hint">What were you mainly doing? This is the label the models learn to predict.</span>
+              <select id="qState">
+                <option value="">Select...</option>
+                <option value="understanding">Understanding</option>
+                <option value="locating_information">Locating info</option>
+                <option value="reasoning_integrating">Reasoning / integrating</option>
+                <option value="answer_construction">Answer construction</option>
+              </select>
+            </label>
+
+            <label class="full">
+              Perceived Correctness
+              <select id="qCorrect">
+                <option value="">Select...</option>
+                <option value="sure">Sure</option>
+                <option value="maybe">Maybe</option>
+                <option value="guess">Guess</option>
+              </select>
+            </label>
+
+            <label class="full">
+              Optional Notes
+              <textarea id="qNotes" rows="3" style="resize: vertical;" placeholder="Any additional thoughts?"></textarea>
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+            <button id="submitSurveyBtn" type="button" style="padding: 12px 35px; font-size: 16px; background-color: #111; color: #fff; border: none; border-radius: 6px;">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------
+    // DEMO MODE
+    // This page is a static copy of the study interface. There is no
+    // backend: every call that used to go to the FastAPI server is gone,
+    // pen samples are only counted in memory, and nothing is stored.
+    // ------------------------------------------------------------------
+
+    const PASSAGE = {
+      title: "Cool Roofs",
+      paragraphs: [
+        `On a hot summer afternoon, a dark roof can become much hotter than the air around it. Dark surfaces absorb most of the sunlight that hits them and turn it into heat. Some of that heat moves down into the building, so people inside turn on fans and air conditioners. In a large city with thousands of dark roofs, this adds up to a lot of extra energy.`,
+        `One simple idea is to make roofs lighter. A "cool roof" is covered with a white or very light coating that reflects much of the sunlight back into the sky. Buildings with cool roofs usually stay cooler inside, and they need less electricity for air conditioning. The coatings are cheap compared with many other energy-saving projects, and they can be painted onto an existing roof in a day or two.`,
+        `Cool roofs are not perfect for every place, however. In cities with long, cold winters, a roof that reflects sunlight can make a building slightly colder, so people may need more heating. Light roofs also become dirty over time and reflect less, so they need to be cleaned or recoated. Because of this, planners often look at the local climate before deciding whether cool roofs are a good choice.`
+      ],
+      subquestions: [
+        { text: "What color is the coating on a cool roof?", target: "locating" },
+        { text: "Why do buildings with dark roofs use more energy in summer?", target: "understanding" },
+        { text: "A city has very hot summers and mild winters. Would you recommend cool roofs there? Explain why.", target: "reasoning" }
+      ]
+    };
+
+    let currentSubQ = 1;
+    const totalSubQs = PASSAGE.subquestions.length;
+    const completedSubQs = new Set();
+    let firstStrokeDone = false;
+
+    // Local counters only, used to show what the real system recorded.
+    let strokeCount = 0;
+    let sampleCount = 0;
+    let lastInputType = "–";
+
+    const timing = {
+      subquestion_opened_ms: null,
+      writing_started_ms: null,
+      last_penup_ms: null,
+      answer_submitted_ms: null
+    };
+
+    function getQLabel() {
+      return `Q1-${currentSubQ}`;
+    }
+
+    function getCurrentPromptText() {
+      return PASSAGE.subquestions[currentSubQ - 1].text;
+    }
+
+    function updateHeader() {
+      document.getElementById("currentQDisplay").textContent = getQLabel();
+      document.getElementById("answerQLabel").textContent = `(${getQLabel()})`;
+    }
+
+    function updateLive() {
+      document.getElementById("liveStrokes").textContent = strokeCount;
+      document.getElementById("liveSamples").textContent = sampleCount;
+      document.getElementById("liveInput").textContent = lastInputType;
+    }
+
+    function renderQuestionContent() {
+      document.getElementById("passageTitle").textContent = PASSAGE.title;
+
+      const passageContent = document.getElementById("passageContent");
+      passageContent.innerHTML = "";
+      PASSAGE.paragraphs.forEach(text => {
+        const p = document.createElement("p");
+        p.textContent = text;
+        passageContent.appendChild(p);
+      });
+
+      const tabContainer = document.getElementById("tabContainer");
+      tabContainer.innerHTML = "";
+      for (let i = 1; i <= totalSubQs; i++) {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn";
+        btn.id = `tab${i}`;
+        btn.type = "button";
+        btn.textContent = i;
+        btn.disabled = true;
+        tabContainer.appendChild(btn);
+      }
+
+      const questionList = document.getElementById("questionList");
+      questionList.innerHTML = "";
+      PASSAGE.subquestions.forEach((q, index) => {
+        const div = document.createElement("div");
+        div.className = "sub-q";
+        div.id = `subq${index + 1}`;
+        div.textContent = `${index + 1}. ${q.text} `;
+        const tag = document.createElement("span");
+        tag.className = "target";
+        tag.textContent = q.target;
+        div.appendChild(tag);
+        questionList.appendChild(div);
+      });
+
+      updateTabVisuals();
+      updateHeader();
+    }
+
+    function updateTabVisuals() {
+      for (let i = 1; i <= totalSubQs; i++) {
+        const tab = document.getElementById(`tab${i}`);
+        const q = document.getElementById(`subq${i}`);
+        tab.classList.remove("active", "done");
+        q.classList.remove("active");
+        if (completedSubQs.has(i)) tab.classList.add("done");
+        if (i === currentSubQ) {
+          tab.classList.add("active");
+          q.classList.add("active");
+        }
+      }
+    }
+
+    function setStatus(text) {
+      document.getElementById("statusPill").textContent = text;
+    }
+
+    function clearCanvasVisual() {
+      const r = canvas.getBoundingClientRect();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, r.width, r.height);
+    }
+
+    function startSubQuestion() {
+      timing.subquestion_opened_ms = Date.now();
+      timing.writing_started_ms = null;
+      timing.last_penup_ms = null;
+      timing.answer_submitted_ms = null;
+      firstStrokeDone = false;
+      strokeCount = 0;
+      sampleCount = 0;
+      lastInputType = "–";
+      updateLive();
+      updateHeader();
+      updateTabVisuals();
+      clearCanvasVisual();
+      setStatus(`Demo mode: ${getQLabel()}`);
+    }
+
+    function secs(ms) {
+      return (ms / 1000).toFixed(1) + " s";
+    }
+
+    function endSubQuestion() {
+      timing.answer_submitted_ms = Date.now();
+      const snapshot = window.getAnswerPNG();
+
+      const total = timing.answer_submitted_ms - timing.subquestion_opened_ms;
+      const beforeWriting = timing.writing_started_ms ? timing.writing_started_ms - timing.subquestion_opened_ms : null;
+      document.getElementById("recordedSummary").innerHTML =
+        `<strong>In the real study this sub-question would produce:</strong><br>` +
+        `Time on sub-question: ${secs(total)}<br>` +
+        `Time before first stroke: ${beforeWriting === null ? "no writing" : secs(beforeWriting)}<br>` +
+        `Pen strokes: ${strokeCount} (${sampleCount} samples)<br>` +
+        `plus about 90 more gaze and pen features from the eye tracker and tablet.<br>` +
+        `<em>Here, these numbers are only shown to you and then discarded.</em>`;
+
+      document.getElementById("qAnswerPreview").src = snapshot;
+      document.getElementById("modalQNum").textContent = getQLabel();
+      document.getElementById("modalPromptText").textContent = getCurrentPromptText();
+      document.getElementById("questionnaireModal").style.display = "flex";
+      setStatus(`Questionnaire: ${getQLabel()}`);
+    }
+
+    function clearSurveyForm() {
+      ["qConf", "qDiff", "qStrat", "qState", "qCorrect", "qNotes"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    function submitQuestionnaire() {
+      const confidence = parseInt(document.getElementById("qConf").value, 10);
+      const difficulty = parseInt(document.getElementById("qDiff").value, 10);
+
+      if (!confidence || confidence < 1 || confidence > 5) { alert("Please enter confidence from 1 to 5."); return; }
+      if (!difficulty || difficulty < 1 || difficulty > 5) { alert("Please enter difficulty from 1 to 5."); return; }
+      if (!document.getElementById("qStrat").value) { alert("Please select your Main Strategy."); return; }
+      if (!document.getElementById("qState").value) { alert("Please select your Dominant State."); return; }
+      if (!document.getElementById("qCorrect").value) { alert("Please select your Perceived Correctness."); return; }
+
+      // Demo mode: the answers are not stored or sent anywhere.
+      document.getElementById("questionnaireModal").style.display = "none";
+      clearSurveyForm();
+
+      completedSubQs.add(currentSubQ);
+      updateTabVisuals();
+
+      if (currentSubQ < totalSubQs) {
+        currentSubQ += 1;
+        startSubQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      document.getElementById("mainGrid").style.display = "none";
+      document.getElementById("endScreen").style.display = "block";
+      setStatus("Demo complete");
+    }
+
+    // ---------------- Canvas: mouse, trackpad, touch or stylus ----------------
+    const canvas = document.getElementById("ans");
+    const ctx = canvas.getContext("2d", { alpha: false });
+
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+
+    let dpr = window.devicePixelRatio || 1;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+
+      const snapshot = document.createElement("canvas");
+      snapshot.width = canvas.width;
+      snapshot.height = canvas.height;
+      snapshot.getContext("2d").drawImage(canvas, 0, 0);
+
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#000";
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+
+      try { ctx.drawImage(snapshot, 0, 0, rect.width, rect.height); } catch {}
+    }
+
+    function pos(e) {
+      const r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    function lineWidthFor(e) {
+      // A real stylus reports pressure 0..1; mouse and trackpad report 0 or 0.5.
+      const pressure = (e.pointerType === "pen" && e.pressure > 0) ? e.pressure : 0.5;
+      return 1 + pressure * 4;
+    }
+
+    function recordSample(e) {
+      sampleCount += 1;
+      lastInputType = e.pointerType || "mouse";
+      updateLive();
+    }
+
+    let drawing = false;
+    let last = null;
+
+    canvas.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      drawing = true;
+      canvas.setPointerCapture(e.pointerId);
+      last = pos(e);
+
+      // Draw a dot so a single click/tap is visible.
+      ctx.lineWidth = lineWidthFor(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(last.x + 0.01, last.y + 0.01);
+      ctx.stroke();
+
+      if (!firstStrokeDone) {
+        firstStrokeDone = true;
+        timing.writing_started_ms = Date.now();
+      }
+      strokeCount += 1;
+      recordSample(e);
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+
+      const p2 = pos(e);
+      ctx.lineWidth = lineWidthFor(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      last = p2;
+      recordSample(e);
+    });
+
+    function endStroke(e) {
+      if (!drawing) return;
+      drawing = false;
+      timing.last_penup_ms = Date.now();
+      if (e) recordSample(e);
+    }
+
+    canvas.addEventListener("pointerup", endStroke);
+    canvas.addEventListener("pointercancel", () => { drawing = false; });
+
+    document.getElementById("clearBtn").addEventListener("click", clearCanvasVisual);
+    document.getElementById("endBtn").addEventListener("click", endSubQuestion);
+    document.getElementById("submitSurveyBtn").addEventListener("click", submitQuestionnaire);
+
+    window.getAnswerPNG = () => {
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const ex = exportCanvas.getContext("2d");
+      ex.fillStyle = "#fff";
+      ex.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ex.drawImage(canvas, 0, 0);
+      return exportCanvas.toDataURL("image/png");
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+
+    window.addEventListener("load", () => {
+      renderQuestionContent();
+      resizeCanvas();
+      startSubQuestion();
+    });
+  </script>
+</body>
+</html>

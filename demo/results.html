@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; form-action 'none'">
+  <title>Study Results</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      color: #333;
+      padding: 32px 16px;
+    }
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    nav { max-width: 900px; margin: 0 auto 12px; font-size: 14px; }
+    nav a { color: #444; margin-right: 16px; }
+    h1 { margin-top: 0; font-size: 26px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    h2 { font-size: 19px; margin: 36px 0 8px; }
+    p { line-height: 1.55; color: #444; font-size: 15px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 8px; }
+    .stat { background: #f8f9fb; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+    .stat strong { display: block; font-size: 24px; color: #111; }
+    .stat span { font-size: 13px; color: #555; }
+    figure { margin: 12px 0 0; }
+    figure img { width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 8px; display: block; }
+    figure.narrow img { max-width: 520px; margin: 0 auto; }
+    figcaption { font-size: 13px; color: #666; margin-top: 8px; line-height: 1.5; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e6e5e0; text-align: right; white-space: nowrap; }
+    th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+    th { color: #555; font-weight: bold; }
+    tr.best td { font-weight: bold; color: #111; }
+    .note {
+      background: #f8f9fb; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 12px 16px; font-size: 14px; color: #555; margin-top: 32px; line-height: 1.5;
+    }
+    .btn { display: inline-block; margin-top: 24px; padding: 12px 24px; background: #111; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; }
+    @media (max-width: 640px) {
+      .container { padding: 24px 18px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <nav><a href="index.html">About</a><a href="experiment.html">Try the task</a></nav>
+  <div class="container">
+    <h1>Results</h1>
+    <p>Models were evaluated with leave-one-participant-out cross-validation, so every prediction is for a person the model never saw during training. Scores are averaged over 5 random seeds.</p>
+
+    <div class="stats">
+      <div class="stat"><strong>47</strong><span>participants</span></div>
+      <div class="stat"><strong>894</strong><span>labelled sub-questions</span></div>
+      <div class="stat"><strong>94</strong><span>gaze, pen and timing features</span></div>
+      <div class="stat"><strong>0.51</strong><span>best macro-F1 (3 classes)</span></div>
+    </div>
+
+    <h2>Model comparison</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Setup</th><th>Model</th><th>Accuracy</th><th>Balanced acc.</th><th>Macro-F1</th><th>Cohen's κ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Rule-based baseline</td><td>–</td><td>0.721</td><td>–</td><td>0.505</td><td>0.42</td></tr>
+          <tr><td>Flat, 49 features</td><td>XGBoost</td><td>0.631</td><td>0.513</td><td>0.509</td><td>0.314</td></tr>
+          <tr class="best"><td>Two-stage, 94 features</td><td>LightGBM</td><td>0.629</td><td>0.519</td><td>0.510</td><td>0.316</td></tr>
+          <tr><td>Two-stage, gaze only</td><td>XGBoost</td><td>0.604</td><td>0.497</td><td>0.487</td><td>0.282</td></tr>
+          <tr><td>Two-stage, pen only</td><td>XGBoost</td><td>0.607</td><td>0.506</td><td>0.503</td><td>0.283</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px;">The baseline predicts the most common state for each question position, which is a strong cue on its own. The models match it overall but are much better at detecting <strong>understanding</strong> (F1 0.20 vs. 0.00), the state where a student is struggling with meaning.</p>
+
+    <h2>Confusion matrix</h2>
+    <figure class="narrow">
+      <img src="assets/confusion_matrix.png" alt="Confusion matrix of a Random Forest model. Locating: 85% correct. Understanding: 4% correct, 70% predicted as locating. Reasoning: 55% correct, 34% predicted as locating.">
+      <figcaption>Random Forest, 3 classes, all participants combined. Locating is recognised well (85%), while understanding is usually confused with locating. This is the main challenge for future work.</figcaption>
+    </figure>
+
+    <h2>Feature importance</h2>
+    <figure>
+      <img src="assets/feature_importance_stages.png" alt="Top 8 features for each stage of the two-stage LightGBM model. Stage 1 is led by time on sub-question, gaze position spread and look-backs to the passage. Stage 2 is led by writing position spread, ink per stroke and stroke count.">
+      <figcaption>The two stages rely on different signals. Separating locating from the rest depends mostly on time and on how widely the eyes move. Separating understanding from reasoning depends mostly on writing behaviour.</figcaption>
+    </figure>
+
+    <div class="note">
+      All numbers and charts on this page are aggregate results. No individual participant's data, recordings or answers are included in this demo.
+    </div>
+
+    <a class="btn" href="experiment.html">Try the reading task</a>
+  </div>
+</body>
+</html>

@@ -36,3 +36,6 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
+
+# Local tool settings
+.claude/
